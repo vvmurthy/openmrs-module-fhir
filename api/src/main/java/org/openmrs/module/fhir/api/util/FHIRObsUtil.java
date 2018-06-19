@@ -16,16 +16,8 @@ package org.openmrs.module.fhir.api.util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hl7.fhir.dstu3.model.Attachment;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.DateTimeType;
-import org.hl7.fhir.dstu3.model.Observation;
-import org.hl7.fhir.dstu3.model.Period;
-import org.hl7.fhir.dstu3.model.Quantity;
-import org.hl7.fhir.dstu3.model.Reference;
-import org.hl7.fhir.dstu3.model.Coding;
-import org.hl7.fhir.dstu3.model.SimpleQuantity;
-import org.hl7.fhir.dstu3.model.StringType;
+import org.apache.xmlbeans.impl.xb.ltgfmt.Code;
+import org.hl7.fhir.dstu3.model.*;
 import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
 import org.openmrs.ConceptNumeric;
@@ -294,6 +286,27 @@ public class FHIRObsUtil {
 		} else {
 			errors.add("Observation DateTime cannot be empty");
 		}
+
+		// Link Encounter / Location through extension
+        // I have added this section to keep the FHIR module consistent with the docs
+        if(observation.getExtension() != null){
+		    for(Extension extension : observation.getExtension()){
+		        if(extension.getUrl().equalsIgnoreCase(FHIRConstants.LOCATION_EXTENTION_URI)){
+		            org.openmrs.Location data = Context.getLocationService().getLocationByUuid(extension.getId());
+		            if(data == null){
+		                errors.add("Tried to parse location; location ID does not exist");
+                    }
+                    obs.setLocation(data);
+
+                }else if(extension.getUrl().equalsIgnoreCase(FHIRConstants.ENCOUNTER_EXTENTION_URI)){
+		            Encounter data = Context.getEncounterService().getEncounterByUuid(extension.getId());
+		            if(data == null){
+		                errors.add("Tried to parse encounter; Encounter ID does not exist");
+                    }
+                    obs.setEncounter(data);
+                }
+            }
+        }
 		
 		String conceptCode = null;
 		String system = null;
@@ -372,6 +385,16 @@ public class FHIRObsUtil {
 					ComplexData data = new ComplexData("images.JPEG", byteStream);
 					obs.setValueComplex(byteStream.toString());
 					obs.setComplexData(data);
+				}else if(FHIRConstants.CWE_HL7_ABBREVATION.equalsIgnoreCase(concept.getDatatype().getHl7Abbreviation())){
+                    CodeableConcept data = (CodeableConcept)observation.getValue();
+
+                    for(Coding evaluate : data.getCoding()){
+                        if(evaluate.getSystem().equalsIgnoreCase(FHIRConstants.OPENMRS_URI)){
+                            Concept value = Context.getConceptService().getConceptByUuid(evaluate.getCode());
+                            obs.setValueCoded(value);
+                        }
+                    }
+
 				}
 			}
 		}

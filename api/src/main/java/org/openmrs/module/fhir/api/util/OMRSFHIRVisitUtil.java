@@ -64,6 +64,7 @@ public class OMRSFHIRVisitUtil {
 		patientUri = FHIRConstants.PATIENT + "/" + omrsVisit.getPatient().getUuid();
 		patientReference.setReference(patientUri);
 		patientReference.setDisplay(nameDisplay.toString());
+        patientReference.setId(omrsVisit.getPatient().getUuid());
 		encounter.setSubject(patientReference);
 
 		//Set encounter period from omrs encounter
@@ -87,8 +88,9 @@ public class OMRSFHIRVisitUtil {
 			locations.add(location);
 			encounter.setLocation(locations);
 		}
+
 		//TODO uncomment the validation and check what's going wrong
-		FHIRUtils.validate(encounter);
+		//FHIRUtils.validate(encounter);
 		return encounter;
 	}
 

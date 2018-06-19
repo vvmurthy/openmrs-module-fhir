@@ -316,8 +316,9 @@ public class FHIREncounterUtil {
 			if (typeCodings != null && !typeCodings.isEmpty()) {
 				Coding code = typeCodings.get(0);
 				String typeCode = code.getCode();
-				int typeId = Integer.parseInt(typeCode);
-				visitType = Context.getVisitService().getVisitType(typeId);
+				visitType = Context.getVisitService().getVisitTypeByUuid(typeCode);
+				//int typeId = Integer.parseInt(typeCode);
+				//visitType = Context.getVisitService().getVisitType(typeId);
 			}
 
 			if (visitType == null) {

@@ -146,7 +146,13 @@ public class RestfulEncounterResourceProvider implements IResourceProvider {
 		OperationOutcome outcome = new OperationOutcome();
 		CodeableConcept concept = new CodeableConcept();
 		Coding coding = concept.addCoding();
-		coding.setDisplay("Encounter is successfully created");
+
+		if(encounter.getId() != null){
+			coding.setDisplay("Encounter is successfully created" + encounter.getId());
+		}else{
+			coding.setDisplay("Encounter is successfully created");
+		}
+
 		outcome.addIssue().setDetails(concept);
 		retVal.setOperationOutcome(outcome);
 		return retVal;
