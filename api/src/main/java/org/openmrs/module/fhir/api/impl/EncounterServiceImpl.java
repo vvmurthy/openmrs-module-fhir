@@ -330,11 +330,15 @@ public class EncounterServiceImpl extends BaseOpenmrsService implements Encounte
 			Identifier ref = encounterRef.getIdentifier();
 			String encounterRefUuid = ref.getId();
 
-			if(StringUtils.isEmpty(encounterRefUuid) && ref != null) {
+			if(encounterRefUuid == null || (StringUtils.isEmpty(encounterRefUuid) && ref != null)){
 				encounterRefUuid = ref.getId();
 			}
 
-			if(StringUtils.isEmpty(encounterRefUuid)) {
+            if(encounterRefUuid == null || StringUtils.isEmpty(encounterRefUuid)){
+                encounterRefUuid = encounterRef.getId();
+            }
+
+			if(encounterRefUuid == null || StringUtils.isEmpty(encounterRefUuid)) {
 				String encounterRefStr = encounterRef.getReference();
 				String[] encounterRefStrSplit = encounterRefStr.split("/");
 				if(encounterRefStrSplit.length > 1) {

@@ -292,6 +292,14 @@ public class FHIREncounterUtil {
 
 		String encounterTypeName = encounter.getTypeFirstRep().getCodingFirstRep().getDisplay();
 		EncounterType encounterType = Context.getEncounterService().getEncounterType(encounterTypeName);
+
+		// Provide a secondary option in case display name is not provided
+        // Encounter type can be linked by uuid as well.
+        if(encounterType == null){
+            String encounterTypeUuid = encounter.getTypeFirstRep().getCodingFirstRep().getCode();
+            encounterType = Context.getEncounterService().getEncounterTypeByUuid(encounterTypeUuid);
+        }
+
 		omrsEncounter.setEncounterType(encounterType);
 
 		return omrsEncounter;

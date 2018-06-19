@@ -14,16 +14,7 @@
 package org.openmrs.module.fhir.api.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.hl7.fhir.dstu3.model.Address;
-import org.hl7.fhir.dstu3.model.BooleanType;
-import org.hl7.fhir.dstu3.model.ContactPoint;
-import org.hl7.fhir.dstu3.model.Enumerations;
-import org.hl7.fhir.dstu3.model.HumanName;
-import org.hl7.fhir.dstu3.model.IdType;
-import org.hl7.fhir.dstu3.model.Identifier;
-import org.hl7.fhir.dstu3.model.Patient;
-import org.hl7.fhir.dstu3.model.Reference;
-import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.dstu3.model.*;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAddress;
@@ -31,10 +22,7 @@ import org.openmrs.PersonName;
 import org.openmrs.api.LocationService;
 import org.openmrs.api.context.Context;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static java.lang.String.valueOf;
 import static org.openmrs.module.fhir.api.util.FHIRUtils.extractUuid;

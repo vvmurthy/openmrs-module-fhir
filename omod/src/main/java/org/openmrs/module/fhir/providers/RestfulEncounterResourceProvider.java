@@ -148,7 +148,7 @@ public class RestfulEncounterResourceProvider implements IResourceProvider {
 		Coding coding = concept.addCoding();
 
 		if(encounter.getId() != null){
-			coding.setDisplay("Encounter is successfully created" + encounter.getId());
+			coding.setDisplay("Encounter is successfully created with id " + encounter.getId());
 		}else{
 			coding.setDisplay("Encounter is successfully created");
 		}

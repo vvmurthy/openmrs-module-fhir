@@ -140,6 +140,11 @@ public class FHIRLocationUtil {
 			omrsLocation.setLongitude(longitude.toString());
 		}
 		String status = location.getStatus().toString();
+
+		if(status == null){
+			errors.add("Cannot create location without status field completed");
+		}
+
 		if (status.equalsIgnoreCase(Location.LocationStatus.ACTIVE.toString())) {
 			omrsLocation.setRetired(false);
 		} else if (status.equalsIgnoreCase((Location.LocationStatus.INACTIVE.toString()))) {

@@ -166,7 +166,7 @@ public class RestfulObservationResourceProvider implements IResourceProvider {
 		OperationOutcome outcome = new OperationOutcome();
 		CodeableConcept concept = new CodeableConcept();
 		Coding coding = concept.addCoding();
-		coding.setDisplay("Observation is successfully created" + observation.getId());
+		coding.setDisplay("Observation is successfully created with id " + observation.getId());
 		outcome.addIssue().setDetails(concept);
 		retVal.setOperationOutcome(outcome);
 		return retVal;
