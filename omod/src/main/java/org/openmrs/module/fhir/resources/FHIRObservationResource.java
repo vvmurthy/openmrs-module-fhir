@@ -74,6 +74,11 @@ public class FHIRObservationResource extends Resource {
 		return obsService.searchObsByPerson(person.getIdPart());
 	}
 
+	public List<Observation> searchObsByPersonAndEncounter(ReferenceParam person, ReferenceParam encounter) {
+		ObsService obsService = Context.getService(ObsService.class);
+		return obsService.searchObsByPersonAndEncounter(person.getIdPart(), encounter.getIdPart());
+	}
+
 	public List<Observation> searchObsByValueConcept(TokenParam answerConceptName) {
 		ObsService obsService = Context.getService(ObsService.class);
 		return obsService.searchObsByValueConcept(answerConceptName.getValue());

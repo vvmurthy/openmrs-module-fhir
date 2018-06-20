@@ -119,6 +119,15 @@ public class RestfulObservationResourceProvider implements IResourceProvider {
 		return provider.searchObsByPerson(person);
 	}
 
+    /**
+     * Search observation by person and encounter
+     */
+    @Search
+    public List<Observation> searchObsByPersonAndEncounter(@RequiredParam(name = Observation.SP_SUBJECT) ReferenceParam person,
+                                                           @RequiredParam(name = Observation.SP_ENCOUNTER) ReferenceParam encounter){
+        return provider.searchObsByPersonAndEncounter(person, encounter);
+    }
+
 	/**
 	 * Search obsservation by answer concept
 	 *

@@ -3,10 +3,7 @@ package org.openmrs.module.fhir.api.strategies.observation;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Observation;
-import org.openmrs.Concept;
-import org.openmrs.Obs;
-import org.openmrs.Patient;
-import org.openmrs.Person;
+import org.openmrs.*;
 import org.openmrs.api.ObsService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir.api.util.FHIRConstants;
@@ -134,6 +131,22 @@ public class ObservationStrategy implements GenericObservationStrategy {
         List<Observation> obsList = new ArrayList<Observation>();
         for (Obs obs : omrsObs) {
             obsList.add(FHIRObsUtil.generateObs(obs));
+        }
+        return obsList;
+    }
+
+    @Override
+    public List<Observation> searchObservationByPersonAndEncounter(String personUuid, String encounterUuid) {
+        Person person = Context.getPersonService().getPersonByUuid(personUuid);
+        Encounter encounter = Context.getEncounterService().getEncounterByUuid(encounterUuid);
+        List<Obs> omrsObs = Context.getObsService().getObservationsByPerson(person);
+        List<Observation> obsList = new ArrayList<Observation>();
+        for (Obs obs : omrsObs) {
+            if(obs.getEncounter() != null && obs.getEncounter().getUuid().equalsIgnoreCase(encounterUuid)){
+                obsList.add(FHIRObsUtil.generateObs(obs));
+            }else if(encounter == null){
+                obsList.add(FHIRObsUtil.generateObs(obs));
+            }
         }
         return obsList;
     }

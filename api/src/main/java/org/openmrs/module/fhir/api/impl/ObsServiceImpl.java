@@ -90,6 +90,13 @@ public class ObsServiceImpl extends BaseOpenmrsService implements ObsService {
 		return ObservationStrategyUtil.getObservationStrategy().searchObservationByPerson(personUuid);
 	}
 
+    /**
+     * @see org.openmrs.module.fhir.api.ObsService#searchObsByPersonAndEncounter(String, String)
+     */
+    public List<Observation> searchObsByPersonAndEncounter(String personUuid, String encounterUuid) {
+        return ObservationStrategyUtil.getObservationStrategy().searchObservationByPersonAndEncounter(personUuid, encounterUuid);
+    }
+
 	/**
 	 * @see org.openmrs.module.fhir.api.ObsService#searchObsByValueConcept(String)
 	 */

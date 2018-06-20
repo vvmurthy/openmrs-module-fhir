@@ -112,6 +112,15 @@ public class EncounterServiceImpl extends BaseOpenmrsService implements Encounte
 		List<PatientIdentifierType> allPatientIdentifierTypes = patientService.getAllPatientIdentifierTypes();
 		List<org.openmrs.Patient> patientList = patientService
 		        .getPatients(identifier, null, allPatientIdentifierTypes, true);
+
+		// In case the "encounter id" is actually the encounter uuid, take this step
+		if(patientList.isEmpty()){
+			Patient patient = patientService.getPatientByUuid(identifier);
+			if(patient != null){
+				patientList.add(patient);
+			}
+		}
+
 		List<Encounter> fhirEncountersList = new ArrayList<Encounter>();
 
 		for (Patient patient : patientList) {

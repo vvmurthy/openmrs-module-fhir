@@ -74,6 +74,14 @@ public interface ObsService extends OpenmrsService {
 	List<Observation> searchObsByPerson(String personUuid);
 
 	/**
+	 * Search observations by person and encounter
+	 *
+	 * @param personUuid person uuid of the person which observations needs to search for
+	 * @return fhir obs resource list
+	 */
+	List<Observation> searchObsByPersonAndEncounter(String personUuid, String encounter);
+
+	/**
 	 * Search observations by value concept
 	 *
 	 * @param conceptName value concept name

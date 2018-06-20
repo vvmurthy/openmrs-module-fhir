@@ -20,6 +20,8 @@ public interface GenericObservationStrategy {
 
     List<Observation> searchObservationByPerson(String personUuid);
 
+    List<Observation> searchObservationByPersonAndEncounter(String personUuid, String encounter);
+
     List<Observation> searchObservationByValueConcept(String conceptName);
 
     List<Observation> searchObservationByPatientIdentifier(String identifier);
