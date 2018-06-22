@@ -383,6 +383,12 @@ public class FHIRObsUtil {
 					Quantity quantity = (Quantity) observation.getValue();
 					BigDecimal bd = quantity.getValue();
 					double doubleValue = bd.doubleValue();
+
+					if(doubleValue % 1 != 0 && !((ConceptNumeric)concept).getAllowDecimal() ){
+						((ConceptNumeric)concept).setAllowDecimal(true);
+						Context.getConceptService().saveConcept(concept);
+					}
+
 					obs.setValueNumeric(doubleValue);
 				} else if (FHIRConstants.ST_HL7_ABBREVATION.equalsIgnoreCase(concept.getDatatype().getHl7Abbreviation())) {
 					StringType value = (StringType) observation.getValue();
