@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.fhir.api.util;
 
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,12 +29,17 @@ import org.openmrs.Obs.Interpretation;
 import org.openmrs.Obs.Status;
 import org.openmrs.api.context.Context;
 import org.openmrs.obs.ComplexData;
+import org.openmrs.util.OpenmrsUtil;
+import org.postgresql.util.Base64;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
 
 public class FHIRObsUtil {
@@ -165,7 +171,34 @@ public class FHIRObsUtil {
 		} else if (FHIRConstants.ED_HL7_ABBREVATION.equalsIgnoreCase(obs.getConcept().getDatatype().getHl7Abbreviation())) {
 			Attachment attachmentDt = new Attachment();
 			attachmentDt.setUrl(FHIRConstants.COMPLEX_DATA_URL + obs.getId());
-			attachmentDt.setData(obs.getValueComplex().getBytes());
+
+			// READ IMAGE FROM LOCAL
+            StringBuilder values = new StringBuilder();
+            BufferedImage image;
+            try{
+                image = ImageIO.read(new File(obs.getValueComplex()));
+            }catch (IOException e){
+                throw new UnprocessableEntityException("Cannot load image");
+            }
+
+            values.append(image.getHeight());
+            values.append(" ");
+            values.append(image.getWidth());
+            values.append(" ");
+
+            for(int i = 0 ; i < image.getHeight() ; i++){
+                for(int j = 0 ; j < image.getWidth() ; j++){
+                    Color color = new Color(image.getRGB(j, i));
+
+                    if(color.getRed() != color.getBlue() || color.getRed() != color.getGreen()){
+                        throw new UnprocessableEntityException("Grayscale images only are supported");
+                    }
+
+                    values.append(color.getRed());
+                    values.append(" ");
+                }
+            }
+            attachmentDt.setTitle(values.toString());
 			observation.setValue(attachmentDt);
 		} else {
 			StringType value = new StringType();
@@ -381,10 +414,47 @@ public class FHIRObsUtil {
 					obs.setValueDate(datetime.getStart());
 				} else if (FHIRConstants.ED_HL7_ABBREVATION.equalsIgnoreCase(concept.getDatatype().getHl7Abbreviation())) {
 					Attachment attachmentDt = (Attachment) observation.getValue();
-					byte[] byteStream = attachmentDt.getData();
-					ComplexData data = new ComplexData("images.JPEG", byteStream);
-					obs.setValueComplex(byteStream.toString());
-					obs.setComplexData(data);
+					String elements = attachmentDt.getDataElement().getValueAsString();
+					String[] values = elements.split(" ");
+
+					Integer height = Integer.parseInt(values[0]);
+					Integer width = Integer.parseInt(values[1]);
+
+					if(values.length != height * width + 2){
+					    errors.add("Invalid image data sent: must be in format [height] [width] [row major pixel data]");
+                    }
+
+                    int n = 2;
+                    BufferedImage data = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+					for(int i = 0 ; i < data.getHeight() ; i++){
+					    for(int j = 0 ; j < data.getWidth() ; j++){
+					        Color color;
+
+					        if(values.length == height * width + 2){
+					            Integer grayValue = Integer.parseInt(values[n]);
+					            n++;
+					            color = new Color(grayValue, grayValue, grayValue);
+                            }else{
+					            Integer red = Integer.parseInt(values[n]);
+					            Integer green = Integer.parseInt(values[n + 1]);
+					            Integer blue = Integer.parseInt(values[n + 2]);
+					            n += 3;
+					            color = new Color(red, green, blue);
+                            }
+                            data.setRGB(j, i, color.getRGB());
+                        }
+                    }
+
+                    // Save imaging data to local folder
+                    // NOTE: Must have a subfolder named data where your openmrs instance is located
+                    try{
+                        ImageIO.write(data, "png", new File(
+                                OpenmrsUtil.getApplicationDataDirectory() + "data" + File.separator + obs.getUuid() + ".png"));
+                    }catch (IOException e){
+					    errors.add("Could not save file");
+                    }
+
+					obs.setValueComplex(OpenmrsUtil.getApplicationDataDirectory() + "data" + File.separator + obs.getUuid() + ".png");
 				}else if(FHIRConstants.CWE_HL7_ABBREVATION.equalsIgnoreCase(concept.getDatatype().getHl7Abbreviation())){
                     CodeableConcept data = (CodeableConcept)observation.getValue();
 
