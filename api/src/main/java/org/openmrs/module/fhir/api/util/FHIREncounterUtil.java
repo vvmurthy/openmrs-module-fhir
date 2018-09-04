@@ -264,7 +264,9 @@ public class FHIREncounterUtil {
 
 			org.openmrs.Provider provider = Context.getProviderService().getProviderByUuid(participantUuid);
 			EncounterRole role = Context.getEncounterService().getEncounterRole(1); // hard coded
-			omrsEncounter.setProvider(role, provider);
+			if(provider != null){
+				omrsEncounter.setProvider(role, provider);
+			}
 		}
 		List<Encounter.EncounterLocationComponent> locationList = encounter.getLocation();
 		if (locationList != null && !locationList.isEmpty()) {

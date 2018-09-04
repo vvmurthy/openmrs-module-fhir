@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xmlbeans.impl.xb.ltgfmt.Code;
 import org.hl7.fhir.dstu3.model.*;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
 import org.openmrs.ConceptNumeric;
@@ -37,6 +38,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.*;
@@ -181,6 +183,7 @@ public class FHIRObsUtil {
                 throw new UnprocessableEntityException("Cannot load image");
             }
 
+            /*
             values.append(image.getHeight());
             values.append(" ");
             values.append(image.getWidth());
@@ -200,6 +203,38 @@ public class FHIRObsUtil {
             }
             attachmentDt.setTitle(values.toString());
 			observation.setValue(attachmentDt);
+			*/
+
+            byte[] valuesI = new byte[image.getWidth() * image.getHeight()];
+
+			for(int i = 0 ; i < image.getHeight() ; i++){
+				for(int j = 0 ; j < image.getWidth() ; j++){
+					Color color = new Color(image.getRGB(j, i));
+
+					if(color.getRed() != color.getBlue() || color.getRed() != color.getGreen()){
+						throw new UnprocessableEntityException("Grayscale images only are supported");
+					}
+
+					byte value = (byte)(color.getRed() - 128);
+					valuesI[i * image.getWidth() + j] = value;
+				}
+			}
+			Base64BinaryType bt = new Base64BinaryType();
+			bt.setValue(valuesI);
+			attachmentDt.setSize(image.getHeight() * 10000 + image.getWidth());
+
+
+			// Bounds check for integer representation of width;
+			// If image width > 10000 it will not be represented correctly in FHIR format
+			// hence this check
+			if(image.getWidth() >= 10000){
+				throw new UnprocessableEntityException("image width is >= 100000 pixels, please use lower resolution" +
+						"images only");
+			}
+
+			attachmentDt.setDataElement(bt);
+			observation.setValue(attachmentDt);
+
 		} else {
 			StringType value = new StringType();
 			value.setValue(obs.getValueAsString(Context.getLocale()));
